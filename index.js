@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors')
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000
 
@@ -33,10 +33,40 @@ async function run() {
         const result = await cursor.toArray()
         res.send(result)
     })
+    app.get('/spot/:id',async(req,res)=>{
+      const id = req.params.id
+      const filter = {_id: new ObjectId(id)}
+      const result = await spotCollection.findOne(filter)
+      res.send(result)
+    })
     app.post('/spot',async(req,res)=>{
         const spot = req.body
         const result = await spotCollection.insertOne(spot)
         res.send(result)
+    })
+    app.put('/spot/:id',async(req,res)=>{
+      const id = req.params.id
+      const spot = req.body
+
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true}
+      const updatedSpot = {
+        $set: {
+          image: spot.image,
+          spotName: spot.spotName,
+          country: spot.country,
+          location: spot.location,
+          description: spot.description,
+          cost: spot.cost,
+          season: spot.season,
+          travelTime: spot.travelTime,
+          visitor: spot.visitor,
+          email: spot.email,
+          name: spot.name
+        }
+      }
+      const result = await spotCollection.updateOne(filter,updatedSpot,options)
+      res.send(result)
     })
 
 
